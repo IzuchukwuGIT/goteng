@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#4169e1" />
+    <meta name="description" content="Discover independent Nigerian brands and shop thoughtfully made finds on Gote.ng." />
+    <title>Gote.ng — You need am? We get am!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="announcement"><span>Made here. Loved everywhere.</span><span class="announcement-note">Shop direct. Connect with sellers on WhatsApp.</span></div>
+    <header class="site-header">
+      <a class="wordmark" href="#" aria-label="Gote.ng home"><img class="brand-logo brand-logo-header" src="images/download%20(1).png" alt="Gote.ng" /></a>
+      <nav class="header-actions" aria-label="Main navigation">
+        <button class="sell-link" id="open-seller">Sell on Gote.ng</button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow"><span></span> THE GOOD STUFF IS CLOSER THAN YOU THINK</div>
+          <h1 id="hero-title"><span id="hero-title-first">You need am?</span><br /><em id="hero-title-emphasis">We get am!</em></h1>
+          <form class="search-form hero-search" role="search" id="search-form">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg>
+            <input id="search-input" type="search" placeholder="Search products, brands..." aria-label="Search products and brands" /><kbd>↵</kbd>
+          </form>
+          <div class="hero-proof"><div class="avatar-stack" aria-hidden="true"><span>F</span><span>A</span><span>O</span><span>+</span></div><span>Shop small. Feel good about it.</span></div>
+        </div>
+        <div class="hero-art">
+          <div class="hero-carousel" id="hero-carousel" aria-label="Featured Nigerian products" aria-roledescription="carousel">
+            <div class="hero-slides" aria-live="off">
+              <figure class="hero-slide active" aria-hidden="false">
+                <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1100&q=85" alt="A model showcasing vibrant Nigerian-inspired fashion" fetchpriority="high" />
+                <figcaption>Nigerian wears <span>01 / 05</span></figcaption>
+              </figure>
+              <figure class="hero-slide" aria-hidden="true">
+                <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1100&q=85" alt="A warm, beautifully designed Nigerian home" />
+                <figcaption>Homes with character <span>02 / 05</span></figcaption>
+              </figure>
+              <figure class="hero-slide" aria-hidden="true">
+                <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=1100&q=85" alt="Gold jewellery crafted to make a statement" />
+                <figcaption>Golden details <span>03 / 05</span></figcaption>
+              </figure>
+              <figure class="hero-slide" aria-hidden="true">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1100&q=85" alt="A Nigerian man wearing a smart shirt" />
+                <figcaption>Everyday, done well <span>04 / 05</span></figcaption>
+              </figure>
+              <figure class="hero-slide" aria-hidden="true">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1100&q=85" alt="A beautiful pair of statement shoes" />
+                <figcaption>Shoes to go places <span>05 / 05</span></figcaption>
+              </figure>
+            </div>
+            <div class="hero-carousel-controls">
+              <button class="carousel-arrow" id="hero-previous" aria-label="Previous featured image">←</button>
+              <div class="carousel-dots" role="group" aria-label="Choose featured image">
+                <button class="carousel-dot active" data-slide="0" aria-label="Show Nigerian wears" aria-current="true"></button>
+                <button class="carousel-dot" data-slide="1" aria-label="Show Nigerian homes"></button>
+                <button class="carousel-dot" data-slide="2" aria-label="Show gold jewellery"></button>
+                <button class="carousel-dot" data-slide="3" aria-label="Show a Nigerian man in a shirt"></button>
+                <button class="carousel-dot" data-slide="4" aria-label="Show shoes"></button>
+              </div>
+              <button class="carousel-arrow" id="hero-next" aria-label="Next featured image">→</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="category-strip" aria-label="Shop by category">
+        <button class="category-chip active" data-category="All"><span class="category-icon">✳</span> Everything</button>
+        <button class="category-chip" data-category="Home"><span class="category-icon">⌂</span> Home & living</button>
+        <button class="category-chip" data-category="Style"><span class="category-icon">◒</span> Style</button>
+        <button class="category-chip" data-category="Beauty"><span class="category-icon">✿</span> Beauty</button>
+        <button class="category-chip" data-category="Food"><span class="category-icon">♨</span> Food & drink</button>
+        <button class="category-chip" data-category="Art"><span class="category-icon">▧</span> Art & objects</button>
+      </section>
+      <section class="shop-section" id="shop">
+        <div class="section-heading">
+          <div><p class="eyebrow">A LITTLE BIT OF EVERYTHING</p><h2>Find something <em>good.</em></h2></div>
+          <div class="product-tools"><span id="result-count" aria-live="polite"></span><label class="sort-label" for="sort-select">Sort by</label><select id="sort-select" aria-label="Sort products"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option></select></div>
+        </div>
+        <div class="seller-filter" id="seller-filter" hidden><span>More from <strong id="seller-filter-name"></strong></span><button id="clear-seller-filter">View all products</button></div>
+        <div class="product-grid" id="product-grid"></div>
+        <div class="empty-state" id="empty-state" hidden><span>⌕</span><h3>No good things found just yet.</h3><p>Try another search or browse everything we have.</p><button class="text-button" id="clear-search">Clear filters ↗</button></div>
+      </section>
+      <section class="promotion-section" aria-labelledby="promotion-title">
+        <div class="promotion-badge"><span>✳</span> A LITTLE BOOST FOR YOUR BRAND</div>
+        <div class="promotion-copy">
+          <p class="eyebrow">GOTE SELLER PROMOTION</p>
+          <h2 id="promotion-title">Reach up to 40,000 people<br /><em>every month for 6 months!</em></h2>
+          <p>Put your products in front of more shoppers across Gote.ng.</p>
+        </div>
+        <div class="promotion-offer">
+          <div class="promotion-price-tag"><span class="price-tag-label">JUST</span><span class="promotion-price"><span class="boost-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16.5 9.2 11l3.5 3.2L20 6.5" /><path d="M14.8 6.5H20v5.2" /><path d="m5 6 .55 1.45L7 8l-1.45.55L5 10l-.55-1.45L3 8l1.45-.55L5 6Z" /></svg></span>₦500</span></div>
+          <span class="promotion-duration">One simple price. Six months of reach.</span>
+          <button class="button button-dark" id="open-promotion-application">Promote your store now <span aria-hidden="true">↗</span></button>
+          <small>Payment isn’t collected on this demo. Apply to get started.</small>
+        </div>
+      </section>
+      <section class="seller-banner">
+        <img class="brand-logo brand-logo-banner" src="images/download%20(1).png" alt="Gote.ng" />
+        <div class="seller-banner-copy"><p class="eyebrow">YOUR PEOPLE ARE OUT THERE</p><h2>Have something<br /><em>good to share?</em></h2><p>Meet your next customers. Bring your brand to a marketplace built for independent Nigerian makers.</p></div>
+        <button class="button button-light" id="open-seller-banner">Open your Gote store <span aria-hidden="true">↗</span></button>
+        <div class="banner-sparkle" aria-hidden="true">✳</div>
+      </section>
+      <section class="values-row" aria-label="Why shop with Gote">
+        <article><span>01</span><h3>Good people, real brands</h3><p>Every store belongs to a real independent seller.</p></article>
+        <article><span>02</span><h3>Find your kind of good</h3><p>Discover thoughtful things you won’t find everywhere.</p></article>
+        <article><span>03</span><h3>Easy does it</h3><p>Shop as a guest. No account, no fuss.</p></article>
+      </section>
+    </main>
+    <footer class="site-footer"><a class="wordmark" href="#" aria-label="Gote.ng home"><img class="brand-logo brand-logo-footer" src="images/download%20(1).png" alt="Gote.ng" /></a><p>A marketplace for the good things people make.</p><span>© 2026 Gote.ng</span></footer>
+    <div class="overlay" id="overlay" hidden></div>
+    <section class="modal" id="seller-modal" role="dialog" aria-modal="true" aria-labelledby="seller-title" aria-hidden="true">
+      <div class="modal-heading"><div><p class="eyebrow">LET’S GET YOU SET UP</p><h2 id="seller-title">Your store starts <em>here.</em></h2><p id="seller-modal-description">Tell us a little about your business to apply for a seller account.</p></div><button class="icon-button close-overlay" aria-label="Close seller form">×</button></div>
+      <form id="seller-form" class="seller-form">
+        <label>Store name<input name="storeName" autocomplete="organization" placeholder="e.g. Sunday Studio" required maxlength="80" /></label>
+        <label>Business address<input name="address" autocomplete="street-address" placeholder="Street address, city, state" required maxlength="180" /></label>
+        <label>Phone number<input name="phone" type="tel" autocomplete="tel" placeholder="+2348012345678" required pattern="\+?[0-9]{7,15}" /></label>
+        <label>Product category
+          <select name="productCategory" id="product-category" required>
+            <option value="" disabled selected>Select what you sell</option>
+            <option>Clothing and Fashion</option>
+            <option>Automobiles</option>
+            <option>Auto Spare Parts</option>
+            <option>Mobile devices and Gadgets</option>
+            <option>Mobile phone accessories</option>
+            <option>Electronics</option>
+            <option>Kitchen Appliances</option>
+            <option>Home decor</option>
+            <option>Real Estate</option>
+            <option>Cakes and pastries</option>
+            <option>Skincare essentials</option>
+            <option>Toiletries</option>
+            <option>Personal care</option>
+            <option>Educational Materials</option>
+            <option value="Other">Others</option>
+          </select>
+        </label>
+        <label>Products you sell<textarea name="products" rows="3" placeholder="List or briefly describe the products you offer" required maxlength="500"></textarea></label>
+        <label id="other-category-field" hidden>Tell us your product category<input name="otherCategory" id="other-category" placeholder="Enter your product category" maxlength="80" /></label>
+        <label>Email address<input name="email" type="email" autocomplete="email" placeholder="you@yourstore.com" required maxlength="254" /></label>
+        <div class="form-row">
+          <label>Password<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="At least 12 characters" required /></label>
+          <label>Confirm password<input name="passwordConfirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" placeholder="Repeat your password" required /></label>
+        </div>
+        <label>11-digit NIN <span class="label-note">For seller verification</span><input name="nin" inputmode="numeric" autocomplete="off" placeholder="Enter 11 digits" required pattern="[0-9]{11}" minlength="11" maxlength="11" aria-describedby="nin-note" /><small id="nin-note">Your NIN is encrypted before it is saved and is not returned in application responses.</small></label>
+        <div class="form-error" id="seller-error" role="alert"></div>
+        <button class="button button-dark form-submit" type="submit">Submit seller application <span>↗</span></button>
+        <p class="form-privacy">Your application is saved securely. Your NIN is encrypted before storage.</p>
+        <p class="account-switch">Already have a seller account? <button type="button" id="show-seller-login">Sign in</button></p>
+      </form>
+      <form id="seller-login-form" class="seller-form" hidden>
+        <label>Email address<input name="email" type="email" autocomplete="username" required maxlength="254" /></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required maxlength="128" /></label>
+        <div class="form-error" id="seller-login-error" role="alert"></div>
+        <button class="button button-dark form-submit" type="submit">Sign in to your store <span aria-hidden="true">↗</span></button>
+        <p class="account-switch">New to Gote.ng? <button type="button" id="show-seller-register">Create a seller account</button></p>
+      </form>
+      <div class="seller-dashboard" id="seller-dashboard" hidden>
+        <div class="dashboard-heading"><div><p class="eyebrow">YOUR SELLER ACCOUNT</p><h3>Welcome, <span id="dashboard-store-name"></span></h3></div><button class="text-button" id="seller-logout">Sign out</button></div>
+        <div class="dashboard-layout">
+          <form id="product-form" class="seller-form product-form">
+            <h3>Add a product</h3>
+            <label>Product name<input name="name" required maxlength="100" placeholder="What are you selling?" /></label>
+            <label>Description<textarea name="description" rows="3" required maxlength="1000" placeholder="Describe your product"></textarea></label>
+            <label>Price in Naira<input name="price" type="number" min="1" max="9999999999" step="1" required placeholder="e.g. 25000" /></label>
+            <label>Product images <span class="label-note">Up to 10 images</span><input id="product-images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple required /><small>JPEG, PNG or WebP. Maximum 5 MB per image.</small></label>
+            <div id="image-preview" class="image-preview" aria-live="polite"></div>
+            <div class="form-error" id="product-error" role="alert"></div>
+            <button class="button button-dark form-submit" type="submit">Add product <span aria-hidden="true">↗</span></button>
+          </form>
+          <section class="seller-product-list" aria-labelledby="seller-products-title">
+            <h3 id="seller-products-title">Your products</h3>
+            <div id="seller-products" class="seller-products"></div>
+            <p id="seller-products-empty" class="seller-products-empty">Your listings will appear here.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
