@@ -1,3 +1,8 @@
 backend/data/
 __pycache__/
 *.py[cod]
+node_modules/
+dist/
+.vercel/
+.env*
+!.env.example

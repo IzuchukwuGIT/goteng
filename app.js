@@ -13,6 +13,7 @@ const formatPrice = (amount) => `₦${amount.toLocaleString("en-NG")}`;
 // Add a verified seller phone in international format; leave it blank until then.
 const sellers = Object.fromEntries(products.map(({ brand }) => [brand, { whatsapp: "" }]));
 const state = { category: "All", search: "", sort: "featured", seller: "", sellerId: "" };
+let activeSellerId = null;
 const grid = document.querySelector("#product-grid");
 const resultCount = document.querySelector("#result-count");
 const emptyState = document.querySelector("#empty-state");
@@ -82,6 +83,17 @@ function escapeHTML(value) {
   })[character]);
 }
 
+function isPublicBlobUrl(value) {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:"
+      && /^[a-z0-9-]+\.public\.blob\.vercel-storage\.com$/i.test(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function renderProducts() {
   const visible = filteredProducts();
   resultCount.textContent = `${visible.length} ${visible.length === 1 ? "find" : "finds"}`;
@@ -128,7 +140,7 @@ async function loadMarketplaceProducts() {
     };
     const sellerProducts = result.products.flatMap((product) => {
       const image = Array.isArray(product.images)
-        ? product.images.find((path) => /^\/media\/[a-f0-9]{32}\.webp$/.test(path))
+        ? product.images.find(isPublicBlobUrl)
         : null;
       if (!image) return [];
       const brand = String(product.storeName);
@@ -246,6 +258,7 @@ function setSellerView(view, seller) {
     ? "Welcome <em>back.</em>"
     : view === "dashboard" ? "Your store <em>dashboard.</em>" : "Your store starts <em>here.</em>";
   if (seller) {
+    activeSellerId = seller.id;
     document.querySelector("#dashboard-store-name").textContent = seller.storeName;
     loadSellerProducts();
   }
@@ -261,12 +274,16 @@ async function loadSellerProducts() {
     const response = await fetch("/api/seller/products");
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Could not load your products.");
-    list.innerHTML = result.products.map((product) => `
+    list.innerHTML = result.products.map((product) => {
+      const image = product.images.find(isPublicBlobUrl);
+      if (!image) return "";
+      return `
       <article class="seller-product-item">
-        <img src="${escapeHTML(product.images[0])}" alt="" />
+        <img src="${escapeHTML(image)}" alt="" />
         <div><h4>${escapeHTML(product.name)} · ${formatPrice(product.price)}</h4>
           <p>${escapeHTML(product.description)}</p></div>
-      </article>`).join("");
+      </article>`;
+    }).join("");
     empty.hidden = result.products.length > 0;
   } catch (error) {
     list.replaceChildren();
@@ -387,6 +404,7 @@ document.querySelector("#seller-logout").addEventListener("click", async () => {
     const response = await fetch("/api/session", { method: "DELETE" });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Could not sign out.");
+    activeSellerId = null;
     productForm.reset();
     previewUrls.forEach((url) => URL.revokeObjectURL(url));
     previewUrls = [];
@@ -450,9 +468,34 @@ productForm.addEventListener("submit", async (event) => {
     return;
   }
   button.disabled = true;
-  button.textContent = "Adding product…";
+  const uploadedImages = [];
   try {
-    const response = await fetch("/api/products", { method: "POST", body: new FormData(productForm) });
+    if (!activeSellerId) throw new Error("Sign in again before adding a product.");
+    for (const [index, file] of files.entries()) {
+      button.textContent = `Uploading image ${index + 1} of ${files.length}…`;
+      const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+      const blob = await upload(
+        `products/${activeSellerId}/${crypto.randomUUID()}.${extension}`,
+        file,
+        {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+          clientPayload: JSON.stringify({ sellerId: String(activeSellerId) }),
+        },
+      );
+      uploadedImages.push(blob.url);
+    }
+    button.textContent = "Saving product…";
+    const response = await fetch("/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: productForm.elements.name.value,
+        description: productForm.elements.description.value,
+        price: productForm.elements.price.value,
+        images: uploadedImages,
+      }),
+    });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Could not add this product.");
     productForm.reset();
@@ -536,3 +579,4 @@ if (!reducedMotion.matches) {
   document.querySelector(".hero-copy")?.classList.add("hero-enter");
   document.querySelector(".hero-art")?.classList.add("hero-enter");
 }
+import { upload } from "@vercel/blob/client";
