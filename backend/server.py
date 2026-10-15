@@ -6,7 +6,6 @@ import json
 import os
 import re
 import secrets
-import sqlite3
 import uuid
 from email.parser import BytesParser
 from email.policy import default as email_policy
@@ -17,14 +16,22 @@ from http.cookies import CookieError, SimpleCookie
 from urllib.parse import urlsplit
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+import mysql.connector
+from mysql.connector import Error as MySQLError
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DATABASE_PATH = Path(os.environ.get(
-    "GOTE_DATABASE_PATH",
-    str(Path(__file__).resolve().parent / "data" / "sellers.sqlite3"),
-))
+MYSQL_CONFIG = {
+    "host": os.environ.get("GOTE_MYSQL_HOST", "127.0.0.1"),
+    "port": int(os.environ.get("GOTE_MYSQL_PORT", "3306")),
+    "user": os.environ.get("GOTE_MYSQL_USER", "gote_app"),
+    "password": os.environ.get("GOTE_MYSQL_PASSWORD", ""),
+    "database": os.environ.get("GOTE_MYSQL_DATABASE", "gote_marketplace"),
+    "charset": "utf8mb4",
+    "collation": "utf8mb4_unicode_ci",
+    "connection_timeout": 10,
+}
 ALLOWED_CATEGORIES = {
     "Clothing and Fashion",
     "Automobiles",
@@ -74,67 +81,39 @@ def encryption_key():
 
 
 def initialize_database():
-    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(DATABASE_PATH) as connection:
-        connection.execute("PRAGMA journal_mode = WAL")
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS sellers (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                store_name TEXT NOT NULL,
-                address TEXT NOT NULL,
-                phone TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE,
-                product_category TEXT NOT NULL,
-                other_category TEXT,
-                products TEXT NOT NULL,
-                nin_encrypted BLOB NOT NULL,
-                password_salt BLOB NOT NULL,
-                password_hash BLOB NOT NULL,
-                created_at TEXT NOT NULL
-            )
-            """
-        )
-        seller_columns = {
-            column[1] for column in connection.execute("PRAGMA table_info(sellers)")
-        }
-        for name, column_type in (
-            ("password_salt", "BLOB"),
-            ("password_hash", "BLOB"),
-        ):
-            if name not in seller_columns:
-                connection.execute(f"ALTER TABLE sellers ADD COLUMN {name} {column_type}")
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS seller_sessions (
-                token_hash TEXT PRIMARY KEY,
-                seller_id INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
-                expires_at TEXT NOT NULL
-            )
-            """
-        )
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS products (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                seller_id INTEGER NOT NULL REFERENCES sellers(id) ON DELETE CASCADE,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                price INTEGER NOT NULL,
-                created_at TEXT NOT NULL
-            )
-            """
-        )
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS product_images (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-                filename TEXT NOT NULL UNIQUE,
-                position INTEGER NOT NULL
-            )
-            """
-        )
+    with open_database() as connection:
+        connection.execute("SELECT 1 FROM sellers LIMIT 0")
+        connection.execute("SELECT 1 FROM seller_sessions LIMIT 0")
+        connection.execute("SELECT 1 FROM products LIMIT 0")
+        connection.execute("SELECT 1 FROM product_images LIMIT 0")
+
+
+class DatabaseConnection:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, _exception, _traceback):
+        try:
+            if exception_type is None:
+                self.connection.commit()
+            else:
+                self.connection.rollback()
+        finally:
+            self.connection.close()
+
+    def execute(self, query, parameters=()):
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(query.replace("?", "%s"), parameters)
+        return cursor
+
+
+def open_database():
+    if not MYSQL_CONFIG["password"]:
+        raise RuntimeError("Set GOTE_MYSQL_PASSWORD to connect to the MySQL database.")
+    return DatabaseConnection(mysql.connector.connect(**MYSQL_CONFIG, autocommit=False))
 
 
 def password_hash(password, salt):
@@ -157,10 +136,7 @@ class GoteHandler(BaseHTTPRequestHandler):
     server_version = "GoteSellerAPI/1.0"
 
     def open_database(self):
-        connection = sqlite3.connect(DATABASE_PATH, timeout=10)
-        connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA foreign_keys = ON")
-        return connection
+        return open_database()
 
     def send_json(self, status, payload, extra_headers=None):
         body = json.dumps(payload).encode("utf-8")
@@ -396,7 +372,7 @@ class GoteHandler(BaseHTTPRequestHandler):
                 datetime.now(timezone.utc).timestamp() + SESSION_SECONDS, timezone.utc
             ).isoformat()
             with self.open_database() as connection:
-                connection.execute("BEGIN IMMEDIATE")
+                connection.execute("START TRANSACTION")
                 existing = connection.execute(
                     "SELECT id FROM sellers WHERE lower(email) = lower(?)",
                     (fields["email"],),
@@ -431,7 +407,7 @@ class GoteHandler(BaseHTTPRequestHandler):
                     """,
                     (seller_id,),
                 ).fetchone()
-        except (OSError, sqlite3.Error, RuntimeError):
+        except (OSError, MySQLError, RuntimeError):
             self.log_error("Seller registration could not be stored.")
             self.send_json(500, {"error": "We couldn’t create your seller account. Please try again later."})
             return
@@ -477,7 +453,7 @@ class GoteHandler(BaseHTTPRequestHandler):
                 self.send_json(401, {"error": "Email or password is incorrect."})
                 return
             token = self.issue_session(seller["id"])
-        except (OSError, sqlite3.Error):
+        except (OSError, MySQLError):
             self.log_error("Seller sign-in could not be completed.")
             self.send_json(500, {"error": "We couldn’t sign you in right now. Please try again later."})
             return
@@ -581,7 +557,7 @@ class GoteHandler(BaseHTTPRequestHandler):
         try:
             IMAGE_DIRECTORY.mkdir(parents=True, exist_ok=True)
             with self.open_database() as connection:
-                connection.execute("BEGIN IMMEDIATE")
+                connection.execute("START TRANSACTION")
                 cursor = connection.execute(
                     """
                     INSERT INTO products (seller_id, name, description, price, created_at)
@@ -602,7 +578,7 @@ class GoteHandler(BaseHTTPRequestHandler):
                         "INSERT INTO product_images (product_id, filename, position) VALUES (?, ?, ?)",
                         (product_id, filename, position),
                     )
-        except (OSError, sqlite3.Error):
+        except (OSError, MySQLError):
             for image_path in written_files:
                 try:
                     image_path.unlink(missing_ok=True)
@@ -672,6 +648,10 @@ class GoteHandler(BaseHTTPRequestHandler):
 
 def main():
     encryption_key()
+    if not re.fullmatch(r"[A-Za-z0-9_]+", MYSQL_CONFIG["database"]):
+        raise RuntimeError(
+            "GOTE_MYSQL_DATABASE may contain only letters, numbers, and underscores."
+        )
     initialize_database()
     host = os.environ.get("GOTE_HOST", "127.0.0.1")
     port = int(os.environ.get("GOTE_PORT", "8000"))
